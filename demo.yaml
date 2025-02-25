@@ -1,0 +1,215 @@
+swagger: '2.0'
+info:
+  title: No2Bounce APIs Reference
+  description: |
+    # Introduction
+    Integrate No2Bounce's single and bulk verification capabilities into your platform via our APIs. Each successful verification costs 1 credit, just like the Single (Premium Mode) and Bulk feature. Visit this page to get your API key, set whitelist IP, and track API usage: [https://app.no2bounce.com/api](https://app.no2bounce.com/api).
+
+    You can buy credits here: [https://app.no2bounce.com/subscriptions](https://app.no2bounce.com/subscriptions). If you need test credits, please contact us via the online chat or email us at [support@no2bounce.com](mailto:support@no2bounce.com).
+    
+
+    
+    #### What is No2Bounce?
+    No2Bounce verifies all kinds of emails and shines at verifying emails that are accept-all or protected by SEGs (Secure Email Gateway). We don't simply mark all accept-alls as risky like others do - we help you identify those that are deliverable indeed while achieving excellent overall delivery rates.
+  version: 1.0.0
+  contact:
+    email: support@no2bounce.com
+    name: No2Bounce APIs Support
+  x-logo:
+    url: https://staticassest.s3.eu-west-2.amazonaws.com/crm/logo.png
+    altText: No2Bounce logo
+basePath: /dev
+schemes:
+  - https
+host: XYZ.execute-api.eu-west-2.amazonaws.com
+consumes:
+  - application/json
+produces:
+  - application/json
+securityDefinitions:
+  ApiToken:
+    type: apiKey
+    name: apitoken
+    in: header
+tags:
+  - name: Single verification
+    description: APIs for verifying emails one by one.
+  - name: Bulk verification
+    description: APIs for verifying emails in bulk.
+paths:
+  /n2b_validate_email:
+    post:
+      tags:
+        - Single verification
+      summary: Validate a single email address
+      description: Submit a single email address for validation.
+      security:
+        - ApiToken: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                example: "xyz.ubhi@aptechsystems.co.uk"
+              catchall:
+                type: boolean
+                example: false
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Success"
+              statusCode:
+                type: integer
+                example: 200
+              data:
+                type: object
+                properties:
+                  trackingId:
+                    type: string
+                    example: "f6ad4f6d-e178-4017-b7d0-446e8662e7a0"
+    get:
+      tags:
+        - Single verification
+      summary: Retrieve validation results for a single email
+      description: Retrieve the validation results using the tracking ID.
+      security:
+        - ApiToken: []
+      parameters:
+        - in: query
+          name: trackingId
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: object
+            properties:
+              trackingId:
+                type: string
+                example: "9deee3a0-f6c9-4b9c-b267-29c9fef6755a"
+              email:
+                type: string
+                example: "xyz.ubhi@aptechsystems.co.uk"
+              totalRecord:
+                type: integer
+                example: 1
+              result:
+                type: object
+                properties:
+                  score:
+                    type: string
+                    example: "60"
+                  scoreStatus:
+                    type: string
+                    example: "Catch-All"
+              creditDebited:
+                type: integer
+                example: 1
+              refund:
+                type: integer
+                example: 0
+              refundStatus:
+                type: string
+                example: "Completed"
+              overallStatus:
+                type: string
+                example: "Completed"
+              totalCredit:
+                type: integer
+                example: 1
+  /n2b_validate_bulk:
+    post:
+      tags:
+        - Bulk verification
+      summary: Validate a list of email addresses
+      description: Submit a list of email addresses for bulk validation.
+      security:
+        - ApiToken: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              emailList:
+                type: array
+                items:
+                  type: string
+                example: ["xyz.ubhi@aptechsystems.co.uk"]
+              catchall:
+                type: boolean
+                example: false
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Success"
+              statusCode:
+                type: integer
+                example: 200
+              data:
+                type: object
+                properties:
+                  trackingId:
+                    type: string
+                    example: "f6ad4f6d-e178-4017-b7d0-446e8662e7a0"
+    get:
+      tags:
+        - Bulk verification
+      summary: Retrieve validation results for bulk emails
+      description: Retrieve the validation results for bulk emails using the tracking ID.
+      security:
+        - ApiToken: []
+      parameters:
+        - in: query
+          name: trackingId
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: object
+            properties:
+              trackingId:
+                type: string
+                example: "9deee3a0-f6c9-4b9c-b267-29c9fef6755a"
+              totalRecord:
+                type: integer
+                example: 50
+              result:
+                type: object
+                properties:
+                  downloadFile:
+                    type: string
+                    example: "https://bounceban.com/public/doc/api.html#tag/Single-verification/paths/~1v1~1verify~1single/get"
+              creditDebited:
+                type: integer
+                example: 50
+              refund:
+                type: integer
+                example: 0
+              refundStatus:
+                type: string
+                example: "Completed"
+              overallStatus:
+                type: string
+                example: "Completed"
+              totalCredit:
+                type: integer
+                example: 50
