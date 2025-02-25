@@ -1,0 +1,244 @@
+swagger: '2.0'
+info:
+  title: No2Bounce APIs Reference
+  description: |
+    # Introduction
+    Integrate No2Bounce's single, bulk, and file-based verification capabilities into your platform via our APIs. Each successful verification costs 1 credit, just like the Single (Premium Mode) and Bulk feature. 
+
+    Visit this page to get your API key, set whitelist IP, and track API usage: [https://app.no2bounce.com/api](https://app.no2bounce.com/api).
+    
+    You can buy credits here: [https://app.no2bounce.com/subscriptions](https://app.no2bounce.com/subscriptions).
+    
+    #### API playground:
+    Test out our APIs in the official Postman public workspace: [https://www.postman.com/galactic-comet-480286/workspace/bounceban-developers](https://www.postman.com/galactic-comet-480286/workspace/bounceban-developers)
+
+  version: 1.0.0
+  contact:
+    email: support@no2bounce.com
+    name: No2Bounce APIs Support
+  x-logo:
+    url: https://staticassest.s3.eu-west-2.amazonaws.com/crm/logo.png
+    altText: No2Bounce logo
+
+basePath: /dev
+schemes:
+  - https
+host: XYZ.execute-api.eu-west-2.amazonaws.com
+consumes:
+  - application/json
+produces:
+  - application/json
+
+securityDefinitions:
+  ApiToken:
+    type: apiKey
+    name: apitoken
+    in: header
+
+tags:
+  - name: Authentication
+    description: APIs for authentication and token validation.
+  - name: Single verification
+    description: APIs for verifying emails one by one.
+  - name: Bulk verification
+    description: APIs for verifying emails in bulk.
+  - name: File verification
+    description: APIs for validating emails from a CSV file.
+
+paths:
+  /n2b_validate_token:
+    get:
+      tags:
+        - Authentication
+      summary: Validate API Token
+      description: Validate if the provided API token is valid.
+      security:
+        - ApiToken: []
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Success"
+        '401':
+          description: Unauthorized
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Invalid API Token"
+
+  /n2b_validate_email:
+    post:
+      tags:
+        - Single verification
+      summary: Validate a single email address
+      description: Submit a single email address for validation.
+      security:
+        - ApiToken: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                example: "xyz.ubhi@aptechsystems.co.uk"
+              catchall:
+                type: boolean
+                example: false
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Success"
+              statusCode:
+                type: integer
+                example: 200
+              data:
+                type: object
+                properties:
+                  trackingId:
+                    type: string
+                    example: "f6ad4f6d-e178-4017-b7d0-446e8662e7a0"
+
+  /n2b_validate_bulk:
+    post:
+      tags:
+        - Bulk verification
+      summary: Validate a list of email addresses
+      description: Submit a list of email addresses for bulk validation.
+      security:
+        - ApiToken: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              emailList:
+                type: array
+                items:
+                  type: string
+                example: ["xyz.ubhi@aptechsystems.co.uk"]
+              catchall:
+                type: boolean
+                example: false
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Success"
+              statusCode:
+                type: integer
+                example: 200
+              data:
+                type: object
+                properties:
+                  trackingId:
+                    type: string
+                    example: "f6ad4f6d-e178-4017-b7d0-446e8662e7a0"
+
+  /n2b_validate_file:
+    post:
+      tags:
+        - File verification
+      summary: Validate emails from a CSV file
+      description: Submit a CSV file for email validation.
+      security:
+        - ApiToken: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              fileurl:
+                type: string
+                example: "https://your-public-file-url.com/emails.csv"
+              readColumn:
+                type: string
+                example: "email"
+              catchall:
+                type: boolean
+                example: true
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Success"
+              statusCode:
+                type: integer
+                example: 200
+              data:
+                type: object
+                properties:
+                  trackingId:
+                    type: string
+                    example: "182f1317-07ad-4788-873d-ec99044629e5"
+
+    get:
+      tags:
+        - File verification
+      summary: Retrieve file validation results
+      description: Retrieve the validation results for a submitted file using the tracking ID.
+      security:
+        - ApiToken: []
+      parameters:
+        - in: query
+          name: trackingId
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: object
+            properties:
+              trackingId:
+                type: string
+                example: "5d0a9ba4-a8af-4023-a12a-51ce3e7297b9"
+              totalRecord:
+                type: integer
+                example: 1
+              result:
+                type: object
+                properties:
+                  downloadFile:
+                    type: string
+                    example: "https://no2bounce.s3.eu-west-1.amazonaws.com/generatorResult/your-file.csv"
+              creditDebited:
+                type: integer
+                example: 3
+              refund:
+                type: integer
+                example: 0
+              refundStatus:
+                type: string
+                example: "Completed"
+              overallStatus:
+                type: string
+                example: "Completed"
+              totalCredit:
+                type: integer
+                example: 3
