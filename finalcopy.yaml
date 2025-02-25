@@ -1,0 +1,577 @@
+swagger: '2.0'
+info:
+  title: No2Bounce API Reference
+  description: |
+    ## Introduction
+    No2Bounce provides a comprehensive email validation service, allowing users to validate single emails, bulk email lists, and files efficiently.  
+    The API ensures reliable email verification with real-time tracking, helping businesses maintain a high-quality contact database.
+
+    ### Key Features:
+    - **Single Email Validation**: Instantly verify an individual email address.
+    - **Bulk Email Verification**: Validate multiple email addresses in one request.
+    - **File-Based Verification**: Upload a CSV file for batch email validation.
+    - **Tracking System**: Retrieve validation status and history for better monitoring.
+
+    ### Getting Started:
+    To use No2Bounce APIs, you need an API key. Follow the steps below to get started:
+    1. **Obtain Your API Key**: Visit [No2Bounce API Dashboard](https://app.no2bounce.com/api) to generate your API key.
+    2. **Set Whitelisted IPs**: Ensure API access security by configuring your allowed IP addresses.
+    3. **Track API Usage**: Monitor your API requests and responses in real time.
+
+    ### Subscription & Pricing:
+    - No2Bounce operates on a credit-based system. Each successful verification consumes 1 credit.
+    - You can purchase additional credits from the [Subscription Plans](https://app.no2bounce.com/subscriptions) page.
+
+    ### API Documentation:
+    This documentation provides detailed insights into the API endpoints, parameters, and expected responses.
+    - Request and response formats follow standard RESTful API conventions.
+    - Ensure you include the **API Token** in the headers for authentication.
+
+    ## Video Tutorial
+    For a step-by-step guide on integrating and using No2Bounce APIs, watch our tutorial:  
+     [![Watch the tutorial](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://prominentcontactcom-my.sharepoint.com/:v:/g/personal/tharun_p_infynd_com/EQc4adjPe2VFh6AZJw-ZHzoB4j2wKc92egG0DNJW_STZ8w?e=Ddz4f6)
+
+    Click the image above to watch the full tutorial.
+
+
+     
+  version: 1.0.0
+  contact:
+    email: support@no2bounce.com
+    name: No2Bounce APIs Support
+  x-logo:
+    url: https://staticassest.s3.eu-west-2.amazonaws.com/crm/logo.png
+    altText: No2Bounce logo
+
+basePath: /dev
+schemes:
+  - https
+host: XYZ.execute-api.eu-west-2.amazonaws.com
+consumes:
+  - application/json
+produces:
+  - application/json
+
+securityDefinitions:
+  ApiToken:
+    type: apiKey
+    name: apitoken
+    in: header
+
+tags:
+  - name: Authentication
+    description: APIs for authentication and token validation.
+  - name: Single verification
+    description: APIs for verifying emails one by one.
+  - name: Bulk verification
+    description: APIs for verifying emails in bulk.
+  - name: File verification
+    description: APIs for validating emails from a CSV file URL.
+
+paths:
+  /n2b_validate_token:
+    get:
+      tags:
+        - Authentication
+      summary: Validate API Token
+      description: Validate if the provided API token is valid. This endpoint ensures that the API token passed in the request is authorized for accessing protected resources.
+      security:
+        - ApiToken: []
+      responses:
+        '200':
+          description: Token is valid, and authentication is successful.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Success"
+        '400':
+          description: Bad Request - The request is malformed or missing the API token.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Bad Request - API Token is missing or malformed"
+        '401':
+          description: Unauthorized - The API token provided is invalid or expired.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Invalid API Token"
+        '500':
+          description: Internal Server Error - Unexpected server error while validating the token.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Internal server error. Please try again later."
+
+
+  /n2b_validate_email:
+    post:
+      tags:
+        - Single verification
+      summary: Validate a single email address
+      description: Submit a single email address for validation. The API checks if the email address is valid, detects its status (e.g., deliverable, undeliverable, or catch-all), and returns a unique tracking ID for retrieving the results later.
+      security:
+        - ApiToken: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                description: The email address to be validated.
+                example: "xyz.ubhi@aptechsystems.co.uk"
+              catchall:
+                type: boolean
+                description: Whether to check for catch-all addresses.
+                example: false
+      responses:
+        '200':
+          description: Email validation request successful.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Success"
+              statusCode:
+                type: integer
+                example: 200
+              data:
+                type: object
+                properties:
+                  trackingId:
+                    type: string
+                    example: "f6ad4f6d-e178-4017-b7d0-446e8662e7a0"
+        '400':
+          description: Bad Request - The provided email is missing or invalid.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Bad Request - Invalid email format"
+        '401':
+          description: Unauthorized - The API token is missing or invalid.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Invalid API Token"
+        '500':
+          description: Internal Server Error - Unexpected server error.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Internal server error. Please try again later."
+
+    get:
+      tags:
+        - Single verification
+      summary: Retrieve validation results for a single email
+      description: Retrieve the email validation results using the tracking ID generated from the initial request.
+      security:
+        - ApiToken: []
+      parameters:
+        - in: query
+          name: trackingId
+          required: true
+          type: string
+          description: Unique identifier for tracking the validation result.
+      responses:
+        '200':
+          description: Email validation results retrieved successfully.
+          schema:
+            type: object
+            properties:
+              trackingId:
+                type: string
+                example: "9deee3a0-f6c9-4b9c-b267-29c9fef6755a"
+              email:
+                type: string
+                example: "xyz.ubhi@aptechsystems.co.uk"
+              totalRecord:
+                type: integer
+                example: 1
+              result:
+                type: object
+                properties:
+                  score:
+                    type: string
+                    example: "60"
+                  scoreStatus:
+                    type: string
+                    example: "Catch-All"
+              creditDebited:
+                type: integer
+                example: 1
+              refund:
+                type: integer
+                example: 0
+              refundStatus:
+                type: string
+                example: "Completed"
+              overallStatus:
+                type: string
+                example: "Completed"
+              totalCredit:
+                type: integer
+                example: 1
+        '400':
+          description: Bad Request - The tracking ID is missing or invalid.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Bad Request - Invalid tracking ID"
+        '401':
+          description: Unauthorized - The API token is missing or invalid.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Invalid API Token"
+        '404':
+          description: Not Found - No results found for the given tracking ID.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Tracking ID not found"
+        '500':
+          description: Internal Server Error - Unexpected server error while retrieving results.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Internal server error. Please try again later."
+
+  /n2b_validate_bulk:
+    post:
+      tags:
+        - Bulk verification
+      summary: Validate a list of email addresses
+      description: Submit a list of email addresses for bulk validation. This API allows you to validate multiple email addresses in one request, returning a unique tracking ID to fetch the results later.
+      security:
+        - ApiToken: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              emailList:
+                type: array
+                description: A list of email addresses to be validated.
+                items:
+                  type: string
+                example: ["xyz.ubhi@aptechsystems.co.uk", "john.doe@example.com"]
+              catchall:
+                type: boolean
+                description: Whether to check for catch-all email addresses.
+                example: false
+      responses:
+        '200':
+          description: Bulk email validation request submitted successfully.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Success"
+              statusCode:
+                type: integer
+                example: 200
+              data:
+                type: object
+                properties:
+                  trackingId:
+                    type: string
+                    example: "f6ad4f6d-e178-4017-b7d0-446e8662e7a0"
+        '400':
+          description: Bad Request - The provided email list is missing or invalid.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Bad Request - Invalid email format or empty list"
+        '401':
+          description: Unauthorized - The API token is missing or invalid.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Invalid API Token"
+        '500':
+          description: Internal Server Error - Unexpected server error.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Internal server error. Please try again later."
+
+    get:
+      tags:
+        - Bulk verification
+      summary: Retrieve validation results for bulk emails
+      description: Retrieve the validation results for bulk emails using the tracking ID obtained from the submission request.
+      security:
+        - ApiToken: []
+      parameters:
+        - in: query
+          name: trackingId
+          required: true
+          type: string
+          description: Unique identifier for tracking the bulk validation request.
+      responses:
+        '200':
+          description: Bulk email validation results retrieved successfully.
+          schema:
+            type: object
+            properties:
+              trackingId:
+                type: string
+                example: "9deee3a0-f6c9-4b9c-b267-29c9fef6755a"
+              totalRecord:
+                type: integer
+                description: The total number of email addresses processed.
+                example: 50
+              result:
+                type: object
+                properties:
+                  downloadFile:
+                    type: string
+                    description: URL to download the validation results.
+                    example: "https://bounceban.com/public/doc/api.html#tag/Single-verification/paths/~1v1~1verify~1single/get"
+              creditDebited:
+                type: integer
+                description: Number of credits debited for the validation request.
+                example: 50
+              refund:
+                type: integer
+                description: Number of credits refunded (if applicable).
+                example: 0
+              refundStatus:
+                type: string
+                description: Status of the refund process.
+                example: "Completed"
+              overallStatus:
+                type: string
+                description: Overall status of the validation request.
+                example: "Completed"
+              totalCredit:
+                type: integer
+                description: Total credits used for the request.
+                example: 50
+        '400':
+          description: Bad Request - The tracking ID is missing or invalid.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Bad Request - Invalid tracking ID"
+        '401':
+          description: Unauthorized - The API token is missing or invalid.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Invalid API Token"
+        '404':
+          description: Not Found - No results found for the given tracking ID.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Tracking ID not found"
+        '500':
+          description: Internal Server Error - Unexpected server error while retrieving results.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Internal server error. Please try again later."
+
+  /n2b_validate_file:
+    post:
+      tags:
+        - File verification
+      summary: Validate emails from a CSV file
+      description: Submit a publicly accessible CSV file URL for email validation. The system reads the specified column and processes email validation in bulk.
+      security:
+        - ApiToken: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              fileurl:
+                type: string
+                description: URL of the publicly accessible CSV file containing email addresses.
+                example: "https://your-public-file-url.com/emails.csv"
+              readColumn:
+                type: string
+                description: The column name in the CSV file that contains email addresses.
+                example: "email"
+              catchall:
+                type: boolean
+                description: Whether to check for catch-all email addresses.
+                example: true
+      responses:
+        '200':
+          description: File validation request submitted successfully.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Success"
+              statusCode:
+                type: integer
+                example: 200
+              data:
+                type: object
+                properties:
+                  trackingId:
+                    type: string
+                    example: "182f1317-07ad-4788-873d-ec99044629e5"
+        '400':
+          description: Bad Request - Invalid or missing file URL, or incorrect column name.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Bad Request - File URL is missing or invalid"
+        '401':
+          description: Unauthorized - API token is missing or invalid.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Invalid API Token"
+        '500':
+          description: Internal Server Error - Unexpected error processing the file.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Internal server error. Please try again later."
+
+    get:
+      tags:
+        - File verification
+      summary: Retrieve file validation results
+      description: Retrieve the validation results for a submitted CSV file using the tracking ID obtained from the initial request.
+      security:
+        - ApiToken: []
+      parameters:
+        - in: query
+          name: trackingId
+          required: true
+          type: string
+          description: Unique identifier for tracking the file validation request.
+      responses:
+        '200':
+          description: File validation results retrieved successfully.
+          schema:
+            type: object
+            properties:
+              trackingId:
+                type: string
+                example: "5d0a9ba4-a8af-4023-a12a-51ce3e7297b9"
+              totalRecord:
+                type: integer
+                description: Total number of email addresses processed.
+                example: 1
+              result:
+                type: object
+                properties:
+                  downloadFile:
+                    type: string
+                    description: URL to download the validation results CSV file.
+                    example: "https://no2bounce.s3.eu-west-1.amazonaws.com/generatorResult/your-file.csv"
+              creditDebited:
+                type: integer
+                description: Number of credits debited for the validation request.
+                example: 3
+              refund:
+                type: integer
+                description: Number of credits refunded (if applicable).
+                example: 0
+              refundStatus:
+                type: string
+                description: Status of the refund process.
+                example: "Completed"
+              overallStatus:
+                type: string
+                description: Overall status of the validation request.
+                example: "Completed"
+              totalCredit:
+                type: integer
+                description: Total credits used for the request.
+                example: 3
+        '400':
+          description: Bad Request - The tracking ID is missing or invalid.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Bad Request - Invalid tracking ID"
+        '401':
+          description: Unauthorized - API token is missing or invalid.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Invalid API Token"
+        '404':
+          description: Not Found - No results found for the given tracking ID.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Tracking ID not found"
+        '500':
+          description: Internal Server Error - Unexpected error while retrieving results.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Internal server error. Please try again later."
+
+
+
